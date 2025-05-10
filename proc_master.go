@@ -3,7 +3,7 @@ package overseer
 import (
 	"bytes"
 	"crypto/rand"
-	"crypto/sha1"
+	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -22,7 +22,7 @@ import (
 
 var tmpBinPath = filepath.Join(os.TempDir(), "overseer-"+token()+extension())
 
-//a overseer master process
+// a overseer master process
 type master struct {
 	*Config
 	slaveID             int
@@ -84,7 +84,7 @@ func (mp *master) checkBinary() error {
 		return fmt.Errorf("cannot read binary (%s)", err)
 	}
 	//initial hash of file
-	hash := sha1.New()
+	hash := sha256.New()
 	io.Copy(hash, f)
 	mp.binHash = hash.Sum(nil)
 	f.Close()
@@ -176,7 +176,7 @@ func (mp *master) retreiveFileDescriptors() error {
 	return nil
 }
 
-//fetchLoop is run in a goroutine
+// fetchLoop is run in a goroutine
 func (mp *master) fetchLoop() {
 	min := mp.Config.MinFetchInterval
 	time.Sleep(min)
@@ -228,8 +228,8 @@ func (mp *master) fetch() {
 		tmpBin.Close()
 		os.Remove(tmpBinPath)
 	}()
-	//tee off to sha1
-	hash := sha1.New()
+	//tee off to sha256
+	hash := sha256.New()
 	reader = io.TeeReader(reader, hash)
 	//write to a temp file
 	_, err = io.Copy(tmpBin, reader)
@@ -237,12 +237,19 @@ func (mp *master) fetch() {
 		mp.warnf("failed to write temp binary: %s", err)
 		return
 	}
+
 	//compare hash
 	newHash := hash.Sum(nil)
+	//compare with server
+	if !mp.Fetcher.Checksum(hex.EncodeToString(newHash)) {
+		mp.debugf("file hash incorrect")
+		return
+	}
 	if bytes.Equal(mp.binHash, newHash) {
 		mp.debugf("hash match - skip")
 		return
 	}
+
 	//copy permissions
 	if err := chmod(tmpBin, mp.binPerms); err != nil {
 		mp.warnf("failed to make temp binary executable: %s", err)
@@ -331,7 +338,7 @@ func (mp *master) triggerRestart() {
 	}
 }
 
-//not a real fork
+// not a real fork
 func (mp *master) forkLoop() error {
 	//loop, restart command
 	for {

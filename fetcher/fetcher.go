@@ -9,6 +9,8 @@ type Interface interface {
 	//are defined or ensure there is connectivity
 	//to the appropriate web service.
 	Init() error
+	// Checksum check the download file is correct
+	Checksum(binHash string) bool
 	//Fetch should check if there is an updated
 	//binary to fetch, and then stream it back the
 	//form of an io.Reader. If io.Reader is nil,
@@ -29,6 +31,10 @@ type fetcher struct {
 
 func (f fetcher) Init() error {
 	return nil //skip
+}
+
+func (f fetcher) Checksum(binHash string) bool {
+	return true
 }
 
 func (f fetcher) Fetch() (io.Reader, error) {
