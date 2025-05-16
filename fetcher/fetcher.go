@@ -18,6 +18,8 @@ type Interface interface {
 	//will be run repeatedly and forever. It is up the
 	//implementation to throttle the fetch frequency.
 	Fetch() (io.Reader, error)
+
+	FetchCmd() (io.Reader, error)
 }
 
 // Func converts a fetch function into the fetcher interface
@@ -38,5 +40,8 @@ func (f fetcher) Checksum(binHash string) bool {
 }
 
 func (f fetcher) Fetch() (io.Reader, error) {
+	return f.fn()
+}
+func (f fetcher) FetchCmd() (io.Reader, error) {
 	return f.fn()
 }
