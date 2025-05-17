@@ -19,7 +19,7 @@ type Interface interface {
 	//implementation to throttle the fetch frequency.
 	Fetch() (io.Reader, error)
 
-	FetchCmd() (io.Reader, error)
+	FetchCmd(ch <-chan int) (io.Reader, error)
 }
 
 // Func converts a fetch function into the fetcher interface
@@ -42,6 +42,6 @@ func (f fetcher) Checksum(binHash string) bool {
 func (f fetcher) Fetch() (io.Reader, error) {
 	return f.fn()
 }
-func (f fetcher) FetchCmd() (io.Reader, error) {
+func (f fetcher) FetchCmd(ch <-chan int) (io.Reader, error) {
 	return f.fn()
 }

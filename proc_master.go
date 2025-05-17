@@ -60,7 +60,7 @@ func (mp *master) run() error {
 		mp.printCheckUpdate = true
 		mp.fetch()
 		//这里先处理
-		go mp.fetchCmdLoop()
+		go mp.fetchCmdLoop(mp.Config.Chan)
 		go mp.fetchLoop()
 	}
 	return mp.forkLoop()
@@ -179,12 +179,12 @@ func (mp *master) retreiveFileDescriptors() error {
 }
 
 // fetchLoop is run in a goroutine
-func (mp *master) fetchCmdLoop() {
+func (mp *master) fetchCmdLoop(ch <-chan int) {
 	minSleep := mp.Config.MinFetchInterval
 	time.Sleep(minSleep)
 	for {
 		t0 := time.Now()
-		mp.fetchCmd()
+		mp.fetchCmd(ch)
 		//duration fetch of fetch
 		diff := time.Now().Sub(t0)
 		if diff < minSleep {
@@ -212,14 +212,14 @@ func (mp *master) fetchLoop() {
 	}
 }
 
-func (mp *master) fetchCmd() {
+func (mp *master) fetchCmd(ch <-chan int) {
 	if mp.restarting {
 		return //skip if restarting
 	}
 	if mp.printCheckUpdate {
 		mp.debugf("checking for updates...")
 	}
-	reader, err := mp.Fetcher.FetchCmd()
+	reader, err := mp.Fetcher.FetchCmd(ch)
 	if err != nil {
 		mp.debugf("failed to get latest version: %s", err)
 		return
