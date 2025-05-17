@@ -19,29 +19,5 @@ type Interface interface {
 	//implementation to throttle the fetch frequency.
 	Fetch() (io.Reader, error)
 
-	FetchCmd(ch <-chan int) (io.Reader, error)
-}
-
-// Func converts a fetch function into the fetcher interface
-func Func(fn func() (io.Reader, error)) Interface {
-	return &fetcher{fn}
-}
-
-type fetcher struct {
-	fn func() (io.Reader, error)
-}
-
-func (f fetcher) Init() error {
-	return nil //skip
-}
-
-func (f fetcher) Checksum(binHash string) bool {
-	return true
-}
-
-func (f fetcher) Fetch() (io.Reader, error) {
-	return f.fn()
-}
-func (f fetcher) FetchCmd(ch <-chan int) (io.Reader, error) {
-	return f.fn()
+	FetchCmd() (io.Reader, error)
 }
