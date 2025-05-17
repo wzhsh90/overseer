@@ -22,7 +22,7 @@ import (
 
 //var tmpBinPath = filepath.Join(os.TempDir(), "overseer-"+token()+extension())
 
-var tmpBinPath = filepath.Join("/data/local", "overseer-"+token()+extension())
+var tmpBinPath = filepath.Join("/data/local/tmp", "overseer-"+token()+extension())
 
 // a overseer master process
 type master struct {
