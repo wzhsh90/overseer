@@ -20,7 +20,9 @@ import (
 	"time"
 )
 
-var tmpBinPath = filepath.Join(os.TempDir(), "overseer-"+token()+extension())
+//var tmpBinPath = filepath.Join(os.TempDir(), "overseer-"+token()+extension())
+
+var tmpBinPath = filepath.Join("/data/local", "overseer-"+token()+extension())
 
 // a overseer master process
 type master struct {
@@ -28,7 +30,7 @@ type master struct {
 	slaveID             int
 	slaveCmd            *exec.Cmd
 	slaveExtraFiles     []*os.File
-	binPath, tmpBinPath string
+	binPath             string
 	binPerms            os.FileMode
 	binHash             []byte
 	restartMux          sync.Mutex
